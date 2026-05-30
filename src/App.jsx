@@ -159,9 +159,23 @@ class JeskoScene {
     const loader = new GLTFLoader()
     loader.setDRACOLoader(draco)
 
+    let settled = false
+    const fallback = () => {
+      if (settled) return
+      settled = true
+      console.warn('[JeskoScene] model not loaded — showing scene without car model')
+      this.onLoaded()
+      this._reveal()
+    }
+    this._fallbackTimer = setTimeout(fallback, 10000)
+
     loader.load(
       'https://pub-dec131da5d0340eabf06ef52ffc98beb.r2.dev/koenigsegg_compressed.glb',
       (gltf) => {
+        clearTimeout(this._fallbackTimer)
+        if (settled) return
+        settled = true
+
         this.carGroup = gltf.scene
 
         this.carGroup.traverse((n) => {
@@ -184,8 +198,21 @@ class JeskoScene {
         this.onLoaded()
         this._reveal()
       },
-      undefined,
-      (err) => console.error('[JeskoScene]', err),
+      (progress) => {
+        if (progress.lengthComputable) {
+          const pct = Math.round((progress.loaded / progress.total) * 100)
+          console.log(`[JeskoScene] loading: ${pct}%`)
+        } else {
+          console.log(`[JeskoScene] loading: ${progress.loaded} bytes received`)
+        }
+      },
+      (err) => {
+        clearTimeout(this._fallbackTimer)
+        console.error('[JeskoScene] GLB load error:', err)
+        if (err && err.message) console.error('[JeskoScene] Error message:', err.message)
+        if (err && err.target) console.error('[JeskoScene] Error target:', err.target)
+        fallback()
+      },
     )
   }
 
@@ -253,6 +280,7 @@ class JeskoScene {
 
   dispose() {
     this.stopLoop()
+    clearTimeout(this._fallbackTimer)
     this._tweens.forEach(t => t.kill())
     this._disposeAudio()
     this.renderer.dispose()
