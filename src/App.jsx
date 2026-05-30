@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import gsap from 'gsap'
 
 // ── design tokens ─────────────────────────────────────────────────────────────
@@ -153,11 +152,7 @@ class JeskoScene {
   }
 
   _loadModel() {
-    const draco = new DRACOLoader()
-    draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
-
     const loader = new GLTFLoader()
-    loader.setDRACOLoader(draco)
 
     let settled = false
     const fallback = () => {
@@ -170,7 +165,7 @@ class JeskoScene {
     this._fallbackTimer = setTimeout(fallback, 10000)
 
     loader.load(
-      'https://pub-dec131da5d0340eabf06ef52ffc98beb.r2.dev/koenigsegg_compressed.glb',
+      'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF-Binary/DamagedHelmet.glb',
       (gltf) => {
         clearTimeout(this._fallbackTimer)
         if (settled) return
