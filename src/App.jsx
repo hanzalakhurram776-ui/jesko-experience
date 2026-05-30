@@ -3,6 +3,9 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import gsap from 'gsap'
 
+console.log('THREE version:', THREE.REVISION)
+console.log('GLTFLoader:', GLTFLoader)
+
 // ── design tokens ─────────────────────────────────────────────────────────────
 const tokens = {
   bg:      '#000000',
@@ -111,6 +114,15 @@ class JeskoScene {
     this.camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100)
     this.camera.position.set(0, 0.8, 4.5)
     this.camera.lookAt(0, 0.3, 0)
+
+    // diagnostic: red box — visible immediately if renderer works
+    const testBox = new THREE.Mesh(
+      new THREE.BoxGeometry(0.5, 0.5, 0.5),
+      new THREE.MeshBasicMaterial({ color: 0xff0000 }),
+    )
+    testBox.position.set(0, 0.5, 0)
+    this.scene.add(testBox)
+    console.log('[JeskoScene] red test box added to scene')
   }
 
   _initLights() {
